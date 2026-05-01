@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Billing{% endblock %}
+{% block page_title %}Billing{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 style="margin:0;font-weight:700;">Invoices</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Transparent billing, because trust is everything. 🧾</p>
+    </div>
+</div>
+
+<!-- Status Filter -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'billing:invoice_list' %}" class="btn {% if not status_filter %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">All</a>
+    <a href="?status=unpaid" class="btn {% if status_filter == 'unpaid' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Unpaid</a>
+    <a href="?status=partial" class="btn {% if status_filter == 'partial' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Partial</a>
+    <a href="?status=paid" class="btn {% if status_filter == 'paid' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Paid</a>
+</div>
+
+<div class="cura-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="cura-table">
+                <thead>
+                    <tr>
+                        <th>Invoice ID</th>
+                        <th>Patient</th>
+                        <th>Total (₹)</th>
+                        <th>Paid (₹)</th>
+                        <th>Due (₹)</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr>
+                        <td><strong class="text-danger">{{ inv.invoice_id }}</strong></td>
+                        <td>{{ inv.appointment.patient.full_name }}</td>
+                        <td>₹{{ inv.net_amount|floatformat:2 }}</td>
+                        <td>₹{{ inv.paid_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if inv.due_amount > 0 %}
+                            <span class="text-danger fw-bold">₹{{ inv.due_amount|floatformat:2 }}</span>
+                            {% else %}
+                            <span class="text-success">₹0.00</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-{{ inv.status_color }} badge-cura">{{ inv.get_status_display }}</span></td>
+                        <td>
+                            <a href="{% url 'billing:invoice_detail' inv.pk %}" class="btn btn-sm btn-cura-soft" title="View"><i class="bi bi-eye"></i></a>
+                            {% if inv.status != 'paid' %}
+                            <a href="{% url 'billing:invoice_pay' inv.pk %}" class="btn btn-sm btn-cura-soft" title="Pay"><i class="bi bi-credit-card"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-receipt" style="font-size:2rem;"></i>
+                            <p class="mt-2 mb-0">No invoices yet. They'll appear here once appointments are billed.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

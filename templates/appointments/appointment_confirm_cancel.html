@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Cancel Appointment{% endblock %}
+{% block page_title %}Cancel Appointment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="cura-card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-calendar-x text-danger" style="font-size:3rem;"></i>
+                <h4 class="mt-3">Cancel this appointment?</h4>
+                <p class="text-muted">Appointment <strong>{{ appointment.appointment_id }}</strong> for <strong>{{ appointment.patient.full_name }}</strong> with <strong>Dr. {{ appointment.doctor.user.get_full_name }}</strong> on {{ appointment.date|date:"d M Y" }}.</p>
+                <p class="text-muted" style="font-size:0.85rem;">This will free up the time slot for someone else who might need it.</p>
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-2"></i>Yes, Cancel It</button>
+                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="btn btn-cura-outline">Keep It</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

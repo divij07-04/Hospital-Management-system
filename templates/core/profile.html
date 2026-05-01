@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-header d-flex align-items-center gap-4">
+    <div class="profile-avatar">
+        {{ request.user.first_name|default:request.user.username|make_list|first|upper }}
+    </div>
+    <div>
+        <h3 class="mb-1" style="color:#fff;">{{ request.user.get_full_name|default:request.user.username }}</h3>
+        <p class="mb-0" style="opacity:0.8;font-size:0.9rem;">{{ request.user.get_role_display|default:"Administrator" }} · Member since {{ request.user.date_joined|date:"M Y" }}</p>
+    </div>
+</div>
+
+<div class="cura-card">
+    <div class="card-header">
+        <h5><i class="bi bi-pencil-square me-2"></i>Edit Your Details</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    {{ form.email }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    {{ form.phone }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    {{ form.address }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Profile Picture</label>
+                    <input type="file" name="profile_pic" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-cura"><i class="bi bi-check-lg me-2"></i>Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Pharmacy{% endblock %}
+{% block page_title %}Pharmacy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 style="margin:0;font-weight:700;">Medicine Inventory</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Keep stock healthy so patients stay healthy. 💊</p>
+    </div>
+    <a href="{% url 'pharmacy:medicine_add' %}" class="btn btn-cura" id="add-medicine-btn">
+        <i class="bi bi-plus-circle me-2"></i>Add Medicine
+    </a>
+</div>
+
+{% if low_stock %}
+<div class="alert alert-warning cura-alert mb-4">
+    <i class="bi bi-exclamation-triangle"></i>
+    <span><strong>Heads up!</strong> {{ low_stock.count }} medicine{{ low_stock.count|pluralize }} running low on stock. Please restock soon.</span>
+</div>
+{% endif %}
+
+<!-- Search / Filter -->
+<div class="cura-card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <div class="cura-search">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search medicines...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for val, label in categories %}
+                    <option value="{{ val }}" {% if category == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-cura-outline w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="cura-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="cura-table">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Category</th>
+                        <th>Price (₹)</th>
+                        <th>Stock</th>
+                        <th>Expiry</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in medicines %}
+                    <tr>
+                        <td>
+                            <strong>{{ med.name }}</strong>
+                            {% if med.generic_name %}<br><small class="text-muted">{{ med.generic_name }}</small>{% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary bg-opacity-10 text-secondary badge-cura">{{ med.get_category_display }}</span></td>
+                        <td>₹{{ med.price }}</td>
+                        <td>
+                            {% if med.is_low_stock %}
+                            <span class="text-danger fw-bold">{{ med.quantity_in_stock }}</span>
+                            {% else %}
+                            {{ med.quantity_in_stock }}
+                            {% endif %}
+                        </td>
+                        <td>{{ med.expiry_date|date:"M Y"|default:"—" }}</td>
+                        <td>
+                            {% if med.is_expired %}
+                            <span class="badge bg-danger badge-cura">Expired</span>
+                            {% elif med.is_low_stock %}
+                            <span class="badge bg-warning badge-cura">Low Stock</span>
+                            {% else %}
+                            <span class="badge bg-success bg-opacity-10 text-success badge-cura">In Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'pharmacy:medicine_edit' med.pk %}" class="btn btn-sm btn-cura-soft"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-capsule" style="font-size:2rem;"></i>
+                            <p class="mt-2 mb-0">No medicines in inventory yet. <a href="{% url 'pharmacy:medicine_add' %}">Add some</a>.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

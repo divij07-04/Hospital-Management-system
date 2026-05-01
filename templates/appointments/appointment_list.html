@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Appointments{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 style="margin:0;font-weight:700;">Appointments</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Every visit is a step toward healing. Let's keep things organised.</p>
+    </div>
+    <a href="{% url 'appointments:appointment_add' %}" class="btn btn-cura" id="book-appointment-btn">
+        <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+    </a>
+</div>
+
+<!-- Status Filter -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a href="{% url 'appointments:appointment_list' %}" class="btn {% if not status_filter %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">All</a>
+    <a href="?status=pending" class="btn {% if status_filter == 'pending' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Pending</a>
+    <a href="?status=confirmed" class="btn {% if status_filter == 'confirmed' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Confirmed</a>
+    <a href="?status=in_progress" class="btn {% if status_filter == 'in_progress' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">In Progress</a>
+    <a href="?status=completed" class="btn {% if status_filter == 'completed' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Completed</a>
+    <a href="?status=cancelled" class="btn {% if status_filter == 'cancelled' %}btn-cura{% else %}btn-cura-soft{% endif %} btn-sm">Cancelled</a>
+</div>
+
+<div class="cura-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="cura-table" id="appointments-table">
+                <thead>
+                    <tr>
+                        <th>Appointment ID</th>
+                        <th>Patient</th>
+                        <th>Doctor</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apt in appointments %}
+                    <tr>
+                        <td><strong class="text-danger">{{ apt.appointment_id }}</strong></td>
+                        <td>{{ apt.patient.full_name }}</td>
+                        <td>Dr. {{ apt.doctor.user.get_full_name }}</td>
+                        <td>{{ apt.date|date:"d M Y" }}</td>
+                        <td>{{ apt.get_time_slot_display }}</td>
+                        <td><span class="badge bg-{{ apt.status_color }} badge-cura">{{ apt.get_status_display }}</span></td>
+                        <td>
+                            <a href="{% url 'appointments:appointment_detail' apt.pk %}" class="btn btn-sm btn-cura-soft" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'appointments:appointment_update' apt.pk %}" class="btn btn-sm btn-cura-soft" title="Update"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-calendar-x" style="font-size:2rem;"></i>
+                            <p class="mt-2 mb-0">No appointments found. <a href="{% url 'appointments:appointment_add' %}">Book one now</a> to get started.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

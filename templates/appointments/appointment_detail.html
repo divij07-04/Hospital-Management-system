@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}{{ appointment.appointment_id }}{% endblock %}
+{% block page_title %}Appointment Details{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="cura-card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle me-2"></i>Appointment Info</h5>
+                <span class="badge bg-{{ appointment.status_color }} badge-cura">{{ appointment.get_status_display }}</span>
+            </div>
+            <div class="card-body" style="font-size:0.88rem;">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Appointment ID</span>
+                    <strong class="text-danger">{{ appointment.appointment_id }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Patient</span>
+                    <strong><a href="{% url 'patients:patient_detail' appointment.patient.pk %}">{{ appointment.patient.full_name }}</a></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Doctor</span>
+                    <strong><a href="{% url 'doctors:doctor_detail' appointment.doctor.pk %}">Dr. {{ appointment.doctor.user.get_full_name }}</a></strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Date</span>
+                    <strong>{{ appointment.date|date:"l, d M Y" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Time</span>
+                    <strong>{{ appointment.get_time_slot_display }}</strong>
+                </div>
+                {% if appointment.reason %}
+                <hr>
+                <p class="mb-1"><strong>Reason:</strong></p>
+                <p class="text-muted mb-0">{{ appointment.reason }}</p>
+                {% endif %}
+                {% if appointment.diagnosis %}
+                <hr>
+                <p class="mb-1"><strong>Diagnosis:</strong></p>
+                <p class="text-muted mb-0">{{ appointment.diagnosis }}</p>
+                {% endif %}
+                {% if appointment.notes %}
+                <hr>
+                <p class="mb-1"><strong>Doctor's Notes:</strong></p>
+                <p class="text-muted mb-0">{{ appointment.notes }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <!-- Workflow Tracker for This Appointment -->
+        <div class="cura-card mb-3">
+            <div class="card-header">
+                <h5><i class="bi bi-signpost-split me-2"></i>Journey Tracker</h5>
+            </div>
+            <div class="card-body">
+                <div class="workflow-tracker">
+                    <div class="workflow-step completed">
+                        <div class="step-circle"><i class="bi bi-check"></i></div>
+                        <div class="step-label">Booked</div>
+                    </div>
+                    <div class="workflow-connector {% if appointment.status != 'pending' %}completed{% endif %}"></div>
+                    <div class="workflow-step {% if appointment.status == 'confirmed' %}active{% elif appointment.status == 'in_progress' or appointment.status == 'completed' %}completed{% endif %}">
+                        <div class="step-circle"><i class="bi bi-check-circle"></i></div>
+                        <div class="step-label">Confirmed</div>
+                    </div>
+                    <div class="workflow-connector {% if appointment.status == 'in_progress' or appointment.status == 'completed' %}completed{% endif %}"></div>
+                    <div class="workflow-step {% if appointment.status == 'in_progress' %}active{% elif appointment.status == 'completed' %}completed{% endif %}">
+                        <div class="step-circle"><i class="bi bi-stethoscope"></i></div>
+                        <div class="step-label">In Progress</div>
+                    </div>
+                    <div class="workflow-connector {% if appointment.status == 'completed' %}completed{% endif %}"></div>
+                    <div class="workflow-step {% if appointment.status == 'completed' %}active{% endif %}">
+                        <div class="step-circle"><i class="bi bi-check-all"></i></div>
+                        <div class="step-label">Completed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="cura-card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'appointments:appointment_update' appointment.pk %}" class="btn btn-cura-outline">
+                        <i class="bi bi-pencil me-1"></i>Update Status
+                    </a>
+                    {% if not has_prescription %}
+                    <a href="{% url 'pharmacy:prescription_create' appointment.pk %}" class="btn btn-cura-outline">
+                        <i class="bi bi-capsule me-1"></i>Write Prescription
+                    </a>
+                    {% else %}
+                    <a href="{% url 'pharmacy:prescription_detail' appointment.prescription.pk %}" class="btn btn-cura-soft">
+                        <i class="bi bi-capsule me-1"></i>View Prescription
+                    </a>
+                    {% endif %}
+                    {% if not has_invoice %}
+                    <a href="{% url 'billing:invoice_create' appointment.pk %}" class="btn btn-cura-outline">
+                        <i class="bi bi-receipt me-1"></i>Generate Invoice
+                    </a>
+                    {% else %}
+                    <a href="{% url 'billing:invoice_detail' appointment.invoice.pk %}" class="btn btn-cura-soft">
+                        <i class="bi bi-receipt me-1"></i>View Invoice
+                    </a>
+                    {% endif %}
+                    {% if appointment.status != 'cancelled' and appointment.status != 'completed' %}
+                    <a href="{% url 'appointments:appointment_cancel' appointment.pk %}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

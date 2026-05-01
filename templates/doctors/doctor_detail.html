@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Dr. {{ doctor.user.get_full_name }}{% endblock %}
+{% block page_title %}Doctor Profile{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="cura-card">
+            <div class="card-body text-center">
+                <div class="mx-auto mb-3" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--cura-red),var(--cura-rose));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem;font-weight:700;">
+                    {{ doctor.user.first_name|make_list|first|upper }}
+                </div>
+                <h5 class="mb-1">Dr. {{ doctor.user.get_full_name }}</h5>
+                <p class="text-muted mb-2" style="font-size:0.82rem;">{{ doctor.doctor_id }}</p>
+                <span class="badge bg-danger bg-opacity-10 text-danger badge-cura mb-3">{{ doctor.get_specialization_display }}</span>
+
+                <hr>
+                <div class="text-start" style="font-size:0.88rem;">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Qualification</span>
+                        <strong>{{ doctor.qualification }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Experience</span>
+                        <strong>{{ doctor.experience_years }} years</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Fee</span>
+                        <strong>₹{{ doctor.consultation_fee }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Available</span>
+                        <strong>{{ doctor.available_from|time:"H:i" }} – {{ doctor.available_to|time:"H:i" }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Days</span>
+                        <strong>{{ doctor.available_days|default:"Not set" }}</strong>
+                    </div>
+                    {% if doctor.user.phone %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Phone</span>
+                        <strong>{{ doctor.user.phone }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if doctor.bio %}
+                <hr>
+                <p class="text-muted mb-0" style="font-size:0.82rem;">{{ doctor.bio }}</p>
+                {% endif %}
+                <hr>
+                <a href="{% url 'doctors:doctor_edit' doctor.pk %}" class="btn btn-cura-outline btn-sm w-100">
+                    <i class="bi bi-pencil me-1"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="cura-card">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar-check me-2"></i>Recent Appointments</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="cura-table">
+                        <thead>
+                            <tr><th>ID</th><th>Patient</th><th>Date</th><th>Time</th><th>Status</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in appointments %}
+                            <tr>
+                                <td><strong>{{ apt.appointment_id }}</strong></td>
+                                <td>{{ apt.patient.full_name }}</td>
+                                <td>{{ apt.date|date:"d M Y" }}</td>
+                                <td>{{ apt.get_time_slot_display }}</td>
+                                <td><span class="badge bg-{{ apt.status_color }} badge-cura">{{ apt.get_status_display }}</span></td>
+                                <td><a href="{% url 'appointments:appointment_detail' apt.pk %}" class="btn btn-sm btn-cura-soft"><i class="bi bi-eye"></i></a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">No appointments yet for this doctor.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

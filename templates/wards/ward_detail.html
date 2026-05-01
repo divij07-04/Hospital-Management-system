@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}{{ ward.name }}{% endblock %}
+{% block page_title %}{{ ward.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 style="margin:0;font-weight:700;">{{ ward.name }}</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">{{ ward.get_ward_type_display }} · Floor {{ ward.floor }} · {{ ward.beds.count }} beds · ₹{{ ward.charge_per_day }}/day</p>
+    </div>
+    <a href="{% url 'wards:ward_list' %}" class="btn btn-cura-outline btn-sm"><i class="bi bi-arrow-left me-1"></i>All Wards</a>
+</div>
+
+<!-- Occupancy Stats -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card card-beds">
+            <div class="stat-value">{{ ward.available_beds }}</div>
+            <div class="stat-label">Available</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card-patients">
+            <div class="stat-value">{{ ward.occupied_beds }}</div>
+            <div class="stat-label">Occupied</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card-appointments">
+            <div class="stat-value">{{ ward.occupancy_percentage }}%</div>
+            <div class="stat-label">Occupancy Rate</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card-revenue">
+            <div class="stat-value">{{ ward.beds.count }}</div>
+            <div class="stat-label">Total Beds</div>
+        </div>
+    </div>
+</div>
+
+<!-- Bed Management Table -->
+<div class="cura-card">
+    <div class="card-header">
+        <h5><i class="bi bi-grid-3x3 me-2"></i>Bed Details</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="cura-table">
+                <thead>
+                    <tr>
+                        <th>Bed #</th>
+                        <th>Status</th>
+                        <th>Patient</th>
+                        <th>Admitted On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bed in beds %}
+                    <tr>
+                        <td><strong>{{ bed.bed_number }}</strong></td>
+                        <td><span class="badge bg-{{ bed.status_color }} badge-cura">{{ bed.get_status_display }}</span></td>
+                        <td>
+                            {% if bed.patient %}
+                            <a href="{% url 'patients:patient_detail' bed.patient.pk %}">{{ bed.patient.full_name }}</a>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ bed.admitted_on|date:"d M Y, H:i"|default:"—" }}</td>
+                        <td>
+                            {% if bed.status == 'available' %}
+                            <!-- Admit Patient -->
+                            <form method="post" action="{% url 'wards:bed_admit' bed.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <div class="input-group input-group-sm" style="max-width:280px;">
+                                    <select name="patient" class="form-select form-select-sm" required>
+                                        <option value="">Select patient...</option>
+                                        {% for p in available_patients %}
+                                        <option value="{{ p.pk }}">{{ p.full_name }} ({{ p.patient_id }})</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-cura">Admit</button>
+                                </div>
+                            </form>
+                            {% elif bed.status == 'occupied' %}
+                            <form method="post" action="{% url 'wards:bed_discharge' bed.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-cura-outline" onclick="return confirm('Discharge {{ bed.patient.full_name }}?')">
+                                    <i class="bi bi-box-arrow-right me-1"></i>Discharge
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

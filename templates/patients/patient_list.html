@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Patients{% endblock %}
+{% block page_title %}Patients{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 style="margin:0;font-weight:700;">Our Patients</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Every person here trusts us with their care. Let's honour that.</p>
+    </div>
+    <a href="{% url 'patients:patient_add' %}" class="btn btn-cura" id="add-patient-btn">
+        <i class="bi bi-person-plus me-2"></i>Register Patient
+    </a>
+</div>
+
+<!-- Search & Filter -->
+<div class="cura-card mb-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <div class="cura-search">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" name="q" value="{{ query }}" placeholder="Search by name, ID, or phone..." id="patient-search-input">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select" id="patient-type-filter">
+                    <option value="">All Types</option>
+                    <option value="OPD" {% if reg_type == 'OPD' %}selected{% endif %}>Out-Patient (OPD)</option>
+                    <option value="IPD" {% if reg_type == 'IPD' %}selected{% endif %}>In-Patient (IPD)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-cura-outline w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Patient Table -->
+<div class="cura-card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="cura-table" id="patient-table">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Phone</th>
+                        <th>Blood</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td><strong class="text-danger">{{ patient.patient_id }}</strong></td>
+                        <td>
+                            <a href="{% url 'patients:patient_detail' patient.pk %}" style="font-weight:500;">
+                                {{ patient.full_name }}
+                            </a>
+                        </td>
+                        <td>{{ patient.age }} yrs</td>
+                        <td>{{ patient.get_gender_display }}</td>
+                        <td>{{ patient.phone }}</td>
+                        <td><span class="badge bg-danger bg-opacity-10 text-danger badge-cura">{{ patient.blood_group|default:"—" }}</span></td>
+                        <td><span class="badge {% if patient.registration_type == 'IPD' %}bg-primary{% else %}bg-success{% endif %} badge-cura">{{ patient.registration_type }}</span></td>
+                        <td>
+                            <a href="{% url 'patients:patient_detail' patient.pk %}" class="btn btn-sm btn-cura-soft" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'patients:patient_edit' patient.pk %}" class="btn btn-sm btn-cura-soft" title="Edit"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-people" style="font-size:2rem;"></i><br>
+                            <p class="mt-2 mb-0">No patients found. Start by <a href="{% url 'patients:patient_add' %}">registering someone</a>.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

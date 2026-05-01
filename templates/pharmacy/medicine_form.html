@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="cura-card">
+            <div class="card-header">
+                <h5><i class="bi bi-capsule me-2"></i>{{ title }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Medicine Name *</label>{{ form.name }}</div>
+                        <div class="col-md-6"><label class="form-label">Generic Name</label>{{ form.generic_name }}</div>
+                        <div class="col-md-4"><label class="form-label">Category *</label>{{ form.category }}</div>
+                        <div class="col-md-4"><label class="form-label">Manufacturer</label>{{ form.manufacturer }}</div>
+                        <div class="col-md-4"><label class="form-label">Price (₹) *</label>{{ form.price }}</div>
+                        <div class="col-md-4"><label class="form-label">Quantity in Stock *</label>{{ form.quantity_in_stock }}</div>
+                        <div class="col-md-4"><label class="form-label">Reorder Level</label>{{ form.reorder_level }}</div>
+                        <div class="col-md-4"><label class="form-label">Expiry Date</label>{{ form.expiry_date }}</div>
+                        <div class="col-12"><label class="form-label">Description</label>{{ form.description }}</div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-cura"><i class="bi bi-check-lg me-2"></i>Save Medicine</button>
+                        <a href="{% url 'pharmacy:medicine_list' %}" class="btn btn-cura-outline">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

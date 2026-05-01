@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}{{ invoice.invoice_id }}{% endblock %}
+{% block page_title %}Invoice{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="cura-card" id="invoice-printable">
+            <!-- Header -->
+            <div class="card-body" style="background:linear-gradient(135deg,var(--cura-red),var(--cura-red-dark));color:#fff;border-radius:var(--radius-lg) var(--radius-lg) 0 0;">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h4 class="mb-1" style="color:#fff;"><i class="bi bi-heart-pulse me-2"></i>CURA</h4>
+                        <p class="mb-0" style="opacity:0.8;font-size:0.82rem;">Care You Rely on, Always</p>
+                    </div>
+                    <div class="text-end">
+                        <h6 style="color:#fff;">INVOICE</h6>
+                        <small style="opacity:0.8;">{{ invoice.invoice_id }}</small><br>
+                        <small style="opacity:0.8;">{{ invoice.created_at|date:"d M Y" }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Billed To -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase" style="font-size:0.7rem;letter-spacing:1px;">Billed To</small>
+                        <h6 class="mb-0">{{ invoice.appointment.patient.full_name }}</h6>
+                        <small class="text-muted">{{ invoice.appointment.patient.patient_id }}</small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted text-uppercase" style="font-size:0.7rem;letter-spacing:1px;">Doctor</small>
+                        <h6 class="mb-0">Dr. {{ invoice.appointment.doctor.user.get_full_name }}</h6>
+                        <small class="text-muted">{{ invoice.appointment.doctor.get_specialization_display }}</small>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Line Items -->
+                <div class="table-responsive">
+                    <table class="cura-table">
+                        <thead>
+                            <tr><th>#</th><th>Description</th><th>Qty</th><th>Price (₹)</th><th class="text-end">Total (₹)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Consultation Fee — Dr. {{ invoice.appointment.doctor.user.get_full_name }}</td>
+                                <td>1</td>
+                                <td>₹{{ invoice.appointment.doctor.consultation_fee }}</td>
+                                <td class="text-end">₹{{ invoice.appointment.doctor.consultation_fee }}</td>
+                            </tr>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ forloop.counter|add:1 }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>₹{{ item.unit_price }}</td>
+                                <td class="text-end">₹{{ item.line_total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Totals -->
+                <div class="row justify-content-end mt-3">
+                    <div class="col-md-5">
+                        <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem;">
+                            <span>Subtotal</span>
+                            <strong>₹{{ invoice.total_amount|floatformat:2 }}</strong>
+                        </div>
+                        {% if invoice.discount %}
+                        <div class="d-flex justify-content-between mb-2 text-success" style="font-size:0.9rem;">
+                            <span>Discount</span>
+                            <strong>-₹{{ invoice.discount|floatformat:2 }}</strong>
+                        </div>
+                        {% endif %}
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2" style="font-size:1.1rem;">
+                            <strong>Net Amount</strong>
+                            <strong class="text-danger">₹{{ invoice.net_amount|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" style="font-size:0.9rem;">
+                            <span>Paid</span>
+                            <strong class="text-success">₹{{ invoice.paid_amount|floatformat:2 }}</strong>
+                        </div>
+                        {% if invoice.due_amount > 0 %}
+                        <div class="d-flex justify-content-between" style="font-size:0.9rem;">
+                            <span>Due</span>
+                            <strong class="text-danger">₹{{ invoice.due_amount|floatformat:2 }}</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <span class="badge bg-{{ invoice.status_color }} badge-cura" style="font-size:0.85rem;">{{ invoice.get_status_display }}</span>
+                </div>
+            </div>
+
+            <div class="card-body text-center no-print">
+                <button class="btn btn-cura-outline" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Invoice</button>
+                {% if invoice.status != 'paid' %}
+                <a href="{% url 'billing:invoice_pay' invoice.pk %}" class="btn btn-cura ms-2"><i class="bi bi-credit-card me-2"></i>Record Payment</a>
+                {% endif %}
+                <a href="{% url 'billing:invoice_list' %}" class="btn btn-cura-soft ms-2">Back to Invoices</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

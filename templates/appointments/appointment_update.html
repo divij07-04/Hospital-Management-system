@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Update Appointment{% endblock %}
+{% block page_title %}Update Appointment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="cura-card">
+            <div class="card-header">
+                <h5><i class="bi bi-pencil-square me-2"></i>Update {{ appointment.appointment_id }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Diagnosis</label>
+                            {{ form.diagnosis }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-cura"><i class="bi bi-check-lg me-2"></i>Save Changes</button>
+                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="btn btn-cura-outline">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

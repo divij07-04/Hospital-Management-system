@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Wards & Beds{% endblock %}
+{% block page_title %}Wards & Beds{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <h4 style="margin:0;font-weight:700;">Wards & Bed Management</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">A comfortable bed can make all the difference in recovery. Let's keep things organised. 🛏️</p>
+    </div>
+    <a href="{% url 'wards:ward_add' %}" class="btn btn-cura" id="add-ward-btn">
+        <i class="bi bi-plus-circle me-2"></i>Add Ward
+    </a>
+</div>
+
+<!-- Legend -->
+<div class="d-flex gap-3 mb-4 flex-wrap" style="font-size:0.82rem;">
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(39,174,96,0.3);margin-right:6px;"></span>Available</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(231,76,60,0.3);margin-right:6px;"></span>Occupied</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(243,156,18,0.3);margin-right:6px;"></span>Reserved</span>
+    <span><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:rgba(149,165,166,0.3);margin-right:6px;"></span>Maintenance</span>
+</div>
+
+<!-- Ward Cards -->
+<div class="row g-4">
+    {% for ward in wards %}
+    <div class="col-lg-6 fade-in-up">
+        <div class="cura-card h-100">
+            <div class="card-header">
+                <div>
+                    <h5 class="mb-0">{{ ward.name }}</h5>
+                    <small class="text-muted">{{ ward.get_ward_type_display }} · Floor {{ ward.floor }}</small>
+                </div>
+                <a href="{% url 'wards:ward_detail' ward.pk %}" class="btn btn-cura-soft btn-sm">
+                    <i class="bi bi-gear me-1"></i>Manage
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Occupancy Bar -->
+                <div class="d-flex justify-content-between mb-2" style="font-size:0.82rem;">
+                    <span><strong>{{ ward.occupied_beds }}</strong> occupied / <strong>{{ ward.beds.count }}</strong> total</span>
+                    <span class="fw-bold">{{ ward.occupancy_percentage }}%</span>
+                </div>
+                <div class="progress mb-3" style="height:8px;border-radius:4px;">
+                    <div class="progress-bar {% if ward.occupancy_percentage > 80 %}bg-danger{% elif ward.occupancy_percentage > 50 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width:{{ ward.occupancy_percentage }}%; border-radius:4px;" aria-valuenow="{{ ward.occupancy_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+
+                <!-- Bed Grid -->
+                <div class="bed-grid">
+                    {% for bed in ward.beds.all %}
+                    <div class="bed-cell bed-{{ bed.status }}" title="Bed {{ bed.bed_number }} — {{ bed.get_status_display }}{% if bed.patient %} ({{ bed.patient.full_name }}){% endif %}">
+                        <i class="bi {% if bed.status == 'available' %}bi-check-circle{% elif bed.status == 'occupied' %}bi-person-fill{% elif bed.status == 'reserved' %}bi-clock{% else %}bi-wrench{% endif %}"></i>
+                        <span>{{ bed.bed_number }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-3 text-muted" style="font-size:0.78rem;">
+                    <i class="bi bi-currency-rupee me-1"></i>₹{{ ward.charge_per_day }}/day
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="cura-card">
+            <div class="card-body text-center py-5 text-muted">
+                <i class="bi bi-building" style="font-size:2rem;"></i>
+                <p class="mt-2 mb-0">No wards configured yet. <a href="{% url 'wards:ward_add' %}">Create one</a> to start managing beds.</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

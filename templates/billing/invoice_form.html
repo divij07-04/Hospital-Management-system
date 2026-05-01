@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Generate Invoice{% endblock %}
+{% block page_title %}Generate Invoice{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="cura-card">
+            <div class="card-header">
+                <h5><i class="bi bi-receipt me-2"></i>Invoice for {{ appointment.appointment_id }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info cura-alert mb-4">
+                    <i class="bi bi-info-circle"></i>
+                    <span>Generating invoice for <strong>{{ appointment.patient.full_name }}</strong>. Consultation fee of Dr. {{ appointment.doctor.user.get_full_name }} (₹{{ appointment.doctor.consultation_fee }}) will be added automatically.</span>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="appointment" value="{{ appointment.pk }}">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Discount (₹)</label>
+                            {{ form.discount }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes</label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+
+                    <h6 class="text-danger mb-3"><i class="bi bi-list-check me-1"></i>Line Items (optional extras)</h6>
+                    {{ formset.management_form }}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr><th>Description</th><th>Qty</th><th>Unit Price (₹)</th><th>Del</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for item_form in formset %}
+                                <tr>
+                                    <td>{{ item_form.description }}</td>
+                                    <td>{{ item_form.quantity }}</td>
+                                    <td>{{ item_form.unit_price }}</td>
+                                    <td>{{ item_form.DELETE }}</td>
+                                    {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-cura"><i class="bi bi-check-lg me-2"></i>Generate Invoice</button>
+                        <a href="{% url 'appointments:appointment_detail' appointment.pk %}" class="btn btn-cura-outline">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
